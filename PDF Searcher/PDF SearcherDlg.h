@@ -37,6 +37,9 @@ struct path_leaf_string
 	}
 };
 
+//Khoi tao 1 thread ten MyThread1
+UINT MyThread1(LPVOID Param);
+
 // CPDFSearcherDlg dialog
 class CPDFSearcherDlg : public CDialog
 {
@@ -63,7 +66,6 @@ protected:
 	afx_msg void OnPaint();
 	afx_msg HCURSOR OnQueryDragIcon();
 	DECLARE_MESSAGE_MAP()
-	void GetFilesNameInDir(const std::string& dir, strFilesName& v);
 	int FuncForFun(std::string path, std::string keyword);
 
 private:
@@ -76,6 +78,8 @@ private:
 	std::vector<std::string> vt_strPDF;
 	std::vector<t_InfoEachPDF> vt_PDF;
 
+	CWinThread* thread;
+
 public:
 	afx_msg void OnBnClickedPdfFormatCheck();
 	afx_msg void OnBnClickedWordcheck();
@@ -83,6 +87,11 @@ public:
 	afx_msg void OnBnClickedBtnDir();
 	afx_msg void OnBnClickedBtnSearch();
 	afx_msg void OnCbnSelchangeType();
+
+	void ClearVtUnFiltName();
+	std::string GetPathString();
+	void GetFilesNameInDir(const std::string& dir, strFilesName& v);
+	strFilesName GetRawNameFilter();
 
 private:
 	CEdit m_strPathBox;

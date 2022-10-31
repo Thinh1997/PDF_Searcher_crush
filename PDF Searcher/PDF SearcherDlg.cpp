@@ -54,6 +54,7 @@ END_MESSAGE_MAP()
 CPDFSearcherDlg::CPDFSearcherDlg(CWnd* pParent /*=nullptr*/)
 	: CDialog(IDD_PDF_SEARCHER_DIALOG, pParent)
 {
+	thread = NULL;
 	m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
 }
 
@@ -222,6 +223,10 @@ void CPDFSearcherDlg::OnBnClickedBtnDir()
 		}
 		m_strPathBox.SetWindowTextW(strFolderName);
 	}
+
+	//Goi thread ra de xu ly tren ten file
+	thread = AfxBeginThread(MyThread1, this);
+
 }
 
 //When press Search BTN
@@ -262,9 +267,9 @@ void CPDFSearcherDlg::OnBnClickedBtnSearch()
 		return;
 	}
 
-	std::string strDirectory(CW2A(str_Path.GetString()));
-	vt_strUnFiltFileName.clear();
-	GetFilesNameInDir(strDirectory, vt_strUnFiltFileName);
+	//std::string strDirectory(CW2A(str_Path.GetString()));
+	//vt_strUnFiltFileName.clear();
+	//GetFilesNameInDir(strDirectory, vt_strUnFiltFileName);
 	
 }
 
@@ -343,4 +348,38 @@ void CPDFSearcherDlg::FilterPDFFromList(strFilesName& v)
 			vt_strPDF.push_back(v[i]);
 		}
 	}
+}
+
+UINT MyThread1(LPVOID Param)
+{
+	CPDFSearcherDlg* ptr = (CPDFSearcherDlg*)Param;
+	ptr->ClearVtUnFiltName();
+	std::string Path = ptr->GetPathString();
+	strFilesName strRawFileName = ptr->GetRawNameFilter();
+	ptr->GetFilesNameInDir(Path, strRawFileName);
+
+
+
+	return 0;
+}
+
+
+void CPDFSearcherDlg::ClearVtUnFiltName()
+{
+	vt_strUnFiltFileName.clear();
+}
+
+
+std::string CPDFSearcherDlg::GetPathString()
+{
+	CString str_Path;
+	m_strPathBox.GetWindowTextW(str_Path);
+	std::string strDirectory(CW2A(str_Path.GetString()));
+	return strDirectory;
+}
+
+
+strFilesName CPDFSearcherDlg::GetRawNameFilter()
+{
+	return vt_strUnFiltFileName;
 }
