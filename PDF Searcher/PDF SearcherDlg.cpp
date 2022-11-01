@@ -355,8 +355,8 @@ UINT MyThread1(LPVOID Param)
 	CPDFSearcherDlg* ptr = (CPDFSearcherDlg*)Param;
 	ptr->ClearVtUnFiltName();
 	std::string Path = ptr->GetPathString();
-	strFilesName strRawFileName = ptr->GetRawNameFilter();
-	ptr->GetFilesNameInDir(Path, strRawFileName);
+	strFilesName* strRawFileName = ptr->GetRawNameFilter();
+	ptr->GetFilesNameInDir(Path, *strRawFileName);
 
 
 
@@ -379,7 +379,7 @@ std::string CPDFSearcherDlg::GetPathString()
 }
 
 
-strFilesName CPDFSearcherDlg::GetRawNameFilter()
+strFilesName* CPDFSearcherDlg::GetRawNameFilter()
 {
-	return vt_strUnFiltFileName;
+	return &vt_strUnFiltFileName;
 }

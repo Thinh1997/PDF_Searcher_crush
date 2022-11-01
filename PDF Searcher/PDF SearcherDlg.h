@@ -91,7 +91,7 @@ public:
 	void ClearVtUnFiltName();
 	std::string GetPathString();
 	void GetFilesNameInDir(const std::string& dir, strFilesName& v);
-	strFilesName GetRawNameFilter();
+	strFilesName* GetRawNameFilter();
 
 private:
 	CEdit m_strPathBox;
