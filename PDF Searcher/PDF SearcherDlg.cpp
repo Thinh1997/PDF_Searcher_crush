@@ -66,6 +66,7 @@ void CPDFSearcherDlg::DoDataExchange(CDataExchange* pDX)
 	DDX_Control(pDX, ID_FOLDERFILEDIR, m_strPathBox);
 	DDX_Control(pDX, ID_MSGBOX, m_strFoundBox);
 	DDX_Control(pDX, ID_PROGCESSBAR, m_ProgcessBar);
+	DDX_Control(pDX, ID_LISTBOXRESULT, m_ListBoxResult);
 }
 
 BEGIN_MESSAGE_MAP(CPDFSearcherDlg, CDialog)
@@ -225,7 +226,7 @@ void CPDFSearcherDlg::OnBnClickedBtnDir()
 	}
 
 	//Goi thread ra de xu ly tren ten file
-	thread = AfxBeginThread(MyThread1, this);
+	thread = AfxBeginThread(GetPDFAndShown, this);
 
 }
 
@@ -345,20 +346,31 @@ void CPDFSearcherDlg::FilterPDFFromList(strFilesName& v)
 		std::string format = v[i].substr(v[i].length() - 4, v[i].length());
 		if (format == ".pdf")
 		{
+			t_InfoEachPDF pdfFile;
+			pdfFile.strFileName = v[i];
+			pdfFile.iPageNumb = 0;
+			pdfFile.bSearchResult = false;
+			vt_PDF.push_back(pdfFile);
+
 			vt_strPDF.push_back(v[i]);
 		}
+		//size_t found = v[i].find(".pdf", 0, v[i].length());
+		//if (found != std::string::npos)
+		//{
+		//	vt_strPDF.push_back(v[i]);
+		//}
 	}
 }
 
-UINT MyThread1(LPVOID Param)
+UINT GetPDFAndShown(LPVOID Param)
 {
 	CPDFSearcherDlg* ptr = (CPDFSearcherDlg*)Param;
 	ptr->ClearVtUnFiltName();
 	std::string Path = ptr->GetPathString();
 	strFilesName* strRawFileName = ptr->GetRawNameFilter();
 	ptr->GetFilesNameInDir(Path, *strRawFileName);
-
-
+	ptr->FilterPDFFromList(*strRawFileName);
+	ptr->NumberPDFFound();
 
 	return 0;
 }
@@ -367,6 +379,8 @@ UINT MyThread1(LPVOID Param)
 void CPDFSearcherDlg::ClearVtUnFiltName()
 {
 	vt_strUnFiltFileName.clear();
+	vt_strPDF.clear();
+	vt_PDF.clear();
 }
 
 
@@ -382,4 +396,22 @@ std::string CPDFSearcherDlg::GetPathString()
 strFilesName* CPDFSearcherDlg::GetRawNameFilter()
 {
 	return &vt_strUnFiltFileName;
+}
+
+void CPDFSearcherDlg::NumberPDFFound()
+{
+	if (vt_PDF.size() == 0)
+	{
+		m_strFoundBox.SetWindowTextW(L"No PDF file in this folder, please check again for the right directory.");
+	}
+	else if (vt_PDF.size() == 1)
+	{
+		m_strFoundBox.SetWindowTextW(L"1 PDF file found.");
+	}
+	else
+	{
+		std::string msg = std::to_string(vt_PDF.size()) + " PDF files found.";
+		CString msgShow(msg.c_str());
+		m_strFoundBox.SetWindowTextW(msgShow);
+	}
 }
