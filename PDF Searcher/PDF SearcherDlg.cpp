@@ -381,6 +381,7 @@ void CPDFSearcherDlg::ClearVtUnFiltName()
 	vt_strUnFiltFileName.clear();
 	vt_strPDF.clear();
 	vt_PDF.clear();
+	m_ListBoxResult.ResetContent(); //Remove all items in CListBox
 }
 
 
@@ -400,6 +401,7 @@ strFilesName* CPDFSearcherDlg::GetRawNameFilter()
 
 void CPDFSearcherDlg::NumberPDFFound()
 {
+	//Show number pdf files in box
 	if (vt_PDF.size() == 0)
 	{
 		m_strFoundBox.SetWindowTextW(L"No PDF file in this folder, please check again for the right directory.");
@@ -413,5 +415,13 @@ void CPDFSearcherDlg::NumberPDFFound()
 		std::string msg = std::to_string(vt_PDF.size()) + " PDF files found.";
 		CString msgShow(msg.c_str());
 		m_strFoundBox.SetWindowTextW(msgShow);
+	}
+
+	//Show name file(s) in listbox
+	for (int i = 0; i < vt_PDF.size(); i++)
+	{
+		std::string tempString = std::to_string(i+1) + ") " + vt_PDF[i].strFileName;
+		CString csNameFile(tempString.c_str());
+		m_ListBoxResult.AddString(csNameFile);
 	}
 }

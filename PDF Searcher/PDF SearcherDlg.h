@@ -37,7 +37,7 @@ struct path_leaf_string
 	}
 };
 
-//Khoi tao 1 thread ten MyThread1
+//Khoi tao 1 thread ten GetPDFAndShown
 UINT GetPDFAndShown(LPVOID Param);
 
 // CPDFSearcherDlg dialog
@@ -91,7 +91,6 @@ public:
 	void GetFilesNameInDir(const std::string& dir, strFilesName& v);
 	strFilesName* GetRawNameFilter();
 	void FilterPDFFromList(strFilesName& v);
-
 	void NumberPDFFound();
 
 private:
