@@ -82,6 +82,9 @@ private:
 	afx_msg void OnLbnSelchangeListbox();
 	afx_msg void OnLbnDblclkListbox();
 
+	void DisableAllBox();
+	void CalculateProcessBar();
+
 	CEdit m_strPathBox;
 	CEdit m_strFoundBox;
 	CProgressCtrl m_ProgcessBar;
@@ -90,13 +93,14 @@ private:
 	CButton m_btnCancel;
 	CEdit m_strPageNumFoundBox;
 
+	float m_fEachPercent;
+	float m_fRunning;
 	int m_iRBFormat;
 	CEdit m_strSearchBox;
 	CComboBox m_cbTypeDropList;
 	strFilesName vt_strUnFiltFileName;
 	std::vector<std::string> vt_strPDF;
 	std::vector<t_InfoEachPDF> vt_PDF;
-
 
 	CWinThread* thread;
 	CWinThread* thread2;
@@ -110,4 +114,9 @@ public:
 	void NumberPDFFound();
 	bool CheckFolderDropList();
 	void GetNameFileFromPath();
+	void SetProgcessBar();
+	void GetProgcessBar();
+	void EnableAllBox();
+private:
+	CButton m_btnDir;
 };

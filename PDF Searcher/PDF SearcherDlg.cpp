@@ -71,6 +71,7 @@ void CPDFSearcherDlg::DoDataExchange(CDataExchange* pDX)
 	DDX_Control(pDX, ID_BTNSEARCH, m_btnSearch);
 	DDX_Control(pDX, ID_BTNCLOSEPROGRAM, m_btnCancel);
 	DDX_Control(pDX, IDC_EDIT1, m_strPageNumFoundBox);
+	DDX_Control(pDX, ID_BTNDIR, m_btnDir);
 }
 
 BEGIN_MESSAGE_MAP(CPDFSearcherDlg, CDialog)
@@ -277,7 +278,9 @@ void CPDFSearcherDlg::OnBnClickedBtnSearch()
 		return;
 	}
 
-	
+	DisableAllBox();
+
+	thread2 = AfxBeginThread(FindKeywordProcess, this);
 	
 }
 
@@ -499,8 +502,37 @@ void CPDFSearcherDlg::OnLbnDblclkListbox()
 	ShellExecute(NULL, L"open", File, NULL, NULL, SW_SHOW);
 }
 
+//This thread use for searching
 UINT FindKeywordProcess(LPVOID Param)
 {
+	CPDFSearcherDlg* ptr = (CPDFSearcherDlg*)Param;
 
+
+
+
+	ptr->EnableAllBox();
 	return 0;
+}
+
+void CPDFSearcherDlg::DisableAllBox()
+{
+	m_strSearchBox.EnableWindow(false);
+	m_cbTypeDropList.EnableWindow(false);
+	m_strPathBox.EnableWindow(false);
+	m_btnDir.EnableWindow(false);
+	m_btnSearch.EnableWindow(false);
+}
+
+void CPDFSearcherDlg::EnableAllBox()
+{
+	m_strSearchBox.EnableWindow(true);
+	m_cbTypeDropList.EnableWindow(true);
+	m_strPathBox.EnableWindow(true);
+	m_btnDir.EnableWindow(true);
+	m_btnSearch.EnableWindow(true);
+}
+
+void CPDFSearcherDlg::CalculateProcessBar()
+{
+
 }
