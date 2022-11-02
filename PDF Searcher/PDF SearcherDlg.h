@@ -27,6 +27,7 @@ typedef std::vector<std::string> strFilesName;
 struct t_InfoEachPDF
 {
 	std::string strFileName;
+	std::string strFullPathName;
 	int iPageNumb;
 	bool bSearchResult;
 };
@@ -105,4 +106,7 @@ private:
 	CButton m_btnSearch;
 	CButton m_btnCancel;
 	CEdit m_strPageNumFoundBox;
+public:
+	afx_msg void OnLbnSelchangeListbox();
+	afx_msg void OnLbnDblclkListbox();
 };

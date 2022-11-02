@@ -83,6 +83,8 @@ BEGIN_MESSAGE_MAP(CPDFSearcherDlg, CDialog)
 	ON_BN_CLICKED(ID_BTNSEARCH, &CPDFSearcherDlg::OnBnClickedBtnSearch)
 //	ON_CBN_SELCHANGE(ID_TYPE, &CPDFSearcherDlg::OnCbnSelchangeType)
 ON_CBN_SELCHANGE(ID_TYPE, &CPDFSearcherDlg::OnCbnSelchangeType)
+ON_LBN_SELCHANGE(ID_LISTBOXRESULT, &CPDFSearcherDlg::OnLbnSelchangeListbox)
+ON_LBN_DBLCLK(ID_LISTBOXRESULT, &CPDFSearcherDlg::OnLbnDblclkListbox)
 END_MESSAGE_MAP()
 
 
@@ -351,11 +353,20 @@ void CPDFSearcherDlg::FilterPDFFromList(strFilesName& v)
 	for (int i = 0; i < v.size(); i++)
 	{
 		size_t found = v[i].find_last_of(".");
+		if (found > 100000)
+		{
+			found = 0;
+		}
 		std::string format = v[i].substr(found);
 		if (format == ".pdf")
 		{
+			CString csPath;
+			m_strPathBox.GetWindowTextW(csPath);
+			std::string strPathAndName(CW2A(csPath.GetString()));
+			strPathAndName = strPathAndName + "\\" + v[i];
 			t_InfoEachPDF pdfFile;
 			pdfFile.strFileName = v[i];
+			pdfFile.strFullPathName = strPathAndName;
 			pdfFile.iPageNumb = 0;
 			pdfFile.bSearchResult = false;
 			vt_PDF.push_back(pdfFile);
@@ -463,6 +474,29 @@ void CPDFSearcherDlg::GetNameFileFromPath()
 {
 	std::string Path = GetPathString();
 	size_t found = Path.find_last_of("\\");
+	if (found > 100000)
+	{
+		found = 0;
+	}
 	std::string NameOfFile = Path.substr(found + 1);
 	vt_strUnFiltFileName.push_back(NameOfFile);
+}
+
+void CPDFSearcherDlg::OnLbnSelchangeListbox()
+{
+	// TODO: Show the page of found keyword into m_strPageNumFoundBox
+	int FileNumber = m_ListBoxResult.GetCurSel();
+	int iPage = vt_PDF[FileNumber].iPageNumb;
+	std::string strPage = std::to_string(iPage);
+	CString cstrPage(strPage.c_str());
+	m_strPageNumFoundBox.SetWindowTextW(cstrPage);
+}
+
+
+void CPDFSearcherDlg::OnLbnDblclkListbox()
+{
+	// TODO: Open PDF file via double click in name
+	std::string strFile = vt_PDF[m_ListBoxResult.GetCurSel()].strFullPathName;
+	CString File(strFile.c_str());
+	ShellExecute(NULL, L"open", File, NULL, NULL, SW_SHOW);
 }
