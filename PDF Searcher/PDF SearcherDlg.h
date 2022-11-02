@@ -42,6 +42,7 @@ struct path_leaf_string
 
 //Khoi tao 1 thread ten GetPDFAndShown
 UINT GetPDFAndShown(LPVOID Param);
+UINT FindKeywordProcess(LPVOID Param);
 
 // CPDFSearcherDlg dialog
 class CPDFSearcherDlg : public CDialog
@@ -72,6 +73,23 @@ protected:
 	int FuncForFun(std::string path, std::string keyword);
 
 private:
+	afx_msg void OnBnClickedPdfFormatCheck();
+	afx_msg void OnBnClickedWordcheck();
+	afx_msg void OnBnClickedExcelcheck();
+	afx_msg void OnBnClickedBtnDir();
+	afx_msg void OnBnClickedBtnSearch();
+	afx_msg void OnCbnSelchangeType();
+	afx_msg void OnLbnSelchangeListbox();
+	afx_msg void OnLbnDblclkListbox();
+
+	CEdit m_strPathBox;
+	CEdit m_strFoundBox;
+	CProgressCtrl m_ProgcessBar;
+	CListBox m_ListBoxResult;
+	CButton m_btnSearch;
+	CButton m_btnCancel;
+	CEdit m_strPageNumFoundBox;
+
 	int m_iRBFormat;
 	CEdit m_strSearchBox;
 	CComboBox m_cbTypeDropList;
@@ -79,16 +97,11 @@ private:
 	std::vector<std::string> vt_strPDF;
 	std::vector<t_InfoEachPDF> vt_PDF;
 
+
 	CWinThread* thread;
+	CWinThread* thread2;
 
 public:
-	afx_msg void OnBnClickedPdfFormatCheck();
-	afx_msg void OnBnClickedWordcheck();
-	afx_msg void OnBnClickedExcelcheck();
-	afx_msg void OnBnClickedBtnDir();
-	afx_msg void OnBnClickedBtnSearch();
-	afx_msg void OnCbnSelchangeType();
-
 	void ClearVtUnFiltName();
 	std::string GetPathString();
 	void GetFilesNameInDir(const std::string& dir, strFilesName& v);
@@ -97,16 +110,4 @@ public:
 	void NumberPDFFound();
 	bool CheckFolderDropList();
 	void GetNameFileFromPath();
-
-private:
-	CEdit m_strPathBox;
-	CEdit m_strFoundBox;
-	CProgressCtrl m_ProgcessBar;
-	CListBox m_ListBoxResult;
-	CButton m_btnSearch;
-	CButton m_btnCancel;
-	CEdit m_strPageNumFoundBox;
-public:
-	afx_msg void OnLbnSelchangeListbox();
-	afx_msg void OnLbnDblclkListbox();
 };

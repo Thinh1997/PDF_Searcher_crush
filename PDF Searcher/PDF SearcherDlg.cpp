@@ -55,6 +55,7 @@ CPDFSearcherDlg::CPDFSearcherDlg(CWnd* pParent /*=nullptr*/)
 	: CDialog(IDD_PDF_SEARCHER_DIALOG, pParent)
 {
 	thread = NULL;
+	thread2 = NULL;
 	m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
 }
 
@@ -236,7 +237,6 @@ void CPDFSearcherDlg::OnBnClickedBtnDir()
 
 	//Goi thread ra de xu ly tren ten file
 	thread = AfxBeginThread(GetPDFAndShown, this);
-
 }
 
 //When press Search BTN
@@ -277,9 +277,7 @@ void CPDFSearcherDlg::OnBnClickedBtnSearch()
 		return;
 	}
 
-	//std::string strDirectory(CW2A(str_Path.GetString()));
-	//vt_strUnFiltFileName.clear();
-	//GetFilesNameInDir(strDirectory, vt_strUnFiltFileName);
+	
 	
 }
 
@@ -355,7 +353,7 @@ void CPDFSearcherDlg::FilterPDFFromList(strFilesName& v)
 		size_t found = v[i].find_last_of(".");
 		if (found > 100000)
 		{
-			found = 0;
+			return;
 		}
 		std::string format = v[i].substr(found);
 		if (format == ".pdf")
@@ -476,7 +474,7 @@ void CPDFSearcherDlg::GetNameFileFromPath()
 	size_t found = Path.find_last_of("\\");
 	if (found > 100000)
 	{
-		found = 0;
+		return;
 	}
 	std::string NameOfFile = Path.substr(found + 1);
 	vt_strUnFiltFileName.push_back(NameOfFile);
@@ -499,4 +497,10 @@ void CPDFSearcherDlg::OnLbnDblclkListbox()
 	std::string strFile = vt_PDF[m_ListBoxResult.GetCurSel()].strFullPathName;
 	CString File(strFile.c_str());
 	ShellExecute(NULL, L"open", File, NULL, NULL, SW_SHOW);
+}
+
+UINT FindKeywordProcess(LPVOID Param)
+{
+
+	return 0;
 }
