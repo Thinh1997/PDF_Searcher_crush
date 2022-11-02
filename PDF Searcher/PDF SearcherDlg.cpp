@@ -67,6 +67,9 @@ void CPDFSearcherDlg::DoDataExchange(CDataExchange* pDX)
 	DDX_Control(pDX, ID_MSGBOX, m_strFoundBox);
 	DDX_Control(pDX, ID_PROGCESSBAR, m_ProgcessBar);
 	DDX_Control(pDX, ID_LISTBOXRESULT, m_ListBoxResult);
+	DDX_Control(pDX, ID_BTNSEARCH, m_btnSearch);
+	DDX_Control(pDX, ID_BTNCLOSEPROGRAM, m_btnCancel);
+	DDX_Control(pDX, IDC_EDIT1, m_strPageNumFoundBox);
 }
 
 BEGIN_MESSAGE_MAP(CPDFSearcherDlg, CDialog)
@@ -98,6 +101,10 @@ BOOL CPDFSearcherDlg::OnInitDialog()
 	m_cbTypeDropList.SetCurSel(0);
 
 	m_ProgcessBar.SetRange(0, 100);
+
+	m_btnCancel.EnableWindow(false);
+	m_strPageNumFoundBox.EnableWindow(false);
+	m_ListBoxResult.EnableWindow(false);
 
 	// IDM_ABOUTBOX must be in the system command range.
 	ASSERT((IDM_ABOUTBOX & 0xFFF0) == IDM_ABOUTBOX);
@@ -343,7 +350,8 @@ void CPDFSearcherDlg::FilterPDFFromList(strFilesName& v)
 {
 	for (int i = 0; i < v.size(); i++)
 	{
-		std::string format = v[i].substr(v[i].length() - 4, v[i].length());
+		size_t found = v[i].find_last_of(".");
+		std::string format = v[i].substr(found);
 		if (format == ".pdf")
 		{
 			t_InfoEachPDF pdfFile;
@@ -354,11 +362,6 @@ void CPDFSearcherDlg::FilterPDFFromList(strFilesName& v)
 
 			vt_strPDF.push_back(v[i]);
 		}
-		//size_t found = v[i].find(".pdf", 0, v[i].length());
-		//if (found != std::string::npos)
-		//{
-		//	vt_strPDF.push_back(v[i]);
-		//}
 	}
 }
 
@@ -368,7 +371,14 @@ UINT GetPDFAndShown(LPVOID Param)
 	ptr->ClearVtUnFiltName();
 	std::string Path = ptr->GetPathString();
 	strFilesName* strRawFileName = ptr->GetRawNameFilter();
-	ptr->GetFilesNameInDir(Path, *strRawFileName);
+	if (!Path.empty() && ptr->CheckFolderDropList())
+	{
+		ptr->GetFilesNameInDir(Path, *strRawFileName);
+	}
+	else if (!ptr->CheckFolderDropList())
+	{
+		ptr->GetNameFileFromPath();
+	}
 	ptr->FilterPDFFromList(*strRawFileName);
 	ptr->NumberPDFFound();
 
@@ -401,20 +411,31 @@ strFilesName* CPDFSearcherDlg::GetRawNameFilter()
 
 void CPDFSearcherDlg::NumberPDFFound()
 {
+	std::string Path = GetPathString();
 	//Show number pdf files in box
 	if (vt_PDF.size() == 0)
 	{
 		m_strFoundBox.SetWindowTextW(L"No PDF file in this folder, please check again for the right directory.");
+		m_strPageNumFoundBox.EnableWindow(false);
+		m_ListBoxResult.EnableWindow(false);
 	}
 	else if (vt_PDF.size() == 1)
 	{
 		m_strFoundBox.SetWindowTextW(L"1 PDF file found.");
+		m_strPageNumFoundBox.EnableWindow(true);
+		m_ListBoxResult.EnableWindow(true);
+	}
+	else if (Path.empty())
+	{
+		m_strFoundBox.SetWindowTextW(L"Please select foler");
 	}
 	else
 	{
 		std::string msg = std::to_string(vt_PDF.size()) + " PDF files found.";
 		CString msgShow(msg.c_str());
 		m_strFoundBox.SetWindowTextW(msgShow);
+		m_strPageNumFoundBox.EnableWindow(true);
+		m_ListBoxResult.EnableWindow(true);
 	}
 
 	//Show name file(s) in listbox
@@ -424,4 +445,24 @@ void CPDFSearcherDlg::NumberPDFFound()
 		CString csNameFile(tempString.c_str());
 		m_ListBoxResult.AddString(csNameFile);
 	}
+}
+
+bool CPDFSearcherDlg::CheckFolderDropList()
+{
+	if (m_cbTypeDropList.GetCurSel() == 0)
+	{
+		return true;
+	}
+	else
+	{
+		return false;
+	}
+}
+
+void CPDFSearcherDlg::GetNameFileFromPath()
+{
+	std::string Path = GetPathString();
+	size_t found = Path.find_last_of("\\");
+	std::string NameOfFile = Path.substr(found + 1);
+	vt_strUnFiltFileName.push_back(NameOfFile);
 }

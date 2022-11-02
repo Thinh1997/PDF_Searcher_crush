@@ -14,6 +14,8 @@
 #include <algorithm>
 #include <iterator>
 #include <filesystem>
+#include <iostream>
+#include <iomanip>
 
 using namespace pdftron;
 using namespace PDF;
@@ -92,10 +94,15 @@ public:
 	strFilesName* GetRawNameFilter();
 	void FilterPDFFromList(strFilesName& v);
 	void NumberPDFFound();
+	bool CheckFolderDropList();
+	void GetNameFileFromPath();
 
 private:
 	CEdit m_strPathBox;
 	CEdit m_strFoundBox;
 	CProgressCtrl m_ProgcessBar;
 	CListBox m_ListBoxResult;
+	CButton m_btnSearch;
+	CButton m_btnCancel;
+	CEdit m_strPageNumFoundBox;
 };
