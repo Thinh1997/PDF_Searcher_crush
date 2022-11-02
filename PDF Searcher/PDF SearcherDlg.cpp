@@ -1,7 +1,7 @@
 
 // PDF SearcherDlg.cpp : implementation file
 //
-
+#define _CRT_SECURE_NO_WARNINGS
 #include "framework.h"
 #include "PDF Searcher.h"
 #include "PDF SearcherDlg.h"
@@ -72,6 +72,8 @@ void CPDFSearcherDlg::DoDataExchange(CDataExchange* pDX)
 	DDX_Control(pDX, ID_BTNCLOSEPROGRAM, m_btnCancel);
 	DDX_Control(pDX, IDC_EDIT1, m_strPageNumFoundBox);
 	DDX_Control(pDX, ID_BTNDIR, m_btnDir);
+	DDX_Control(pDX, IDC_SPIN1, m_SpinCtrl);
+	DDX_Control(pDX, ID_PAGEOVERPAGE, m_strPageOnPageBox);
 }
 
 BEGIN_MESSAGE_MAP(CPDFSearcherDlg, CDialog)
@@ -109,6 +111,14 @@ BOOL CPDFSearcherDlg::OnInitDialog()
 	m_btnCancel.EnableWindow(false);
 	m_strPageNumFoundBox.EnableWindow(false);
 	m_ListBoxResult.EnableWindow(false);
+
+	m_SpinCtrl.SetBuddy((CEdit*)GetDlgItem(IDC_EDIT1));
+	m_SpinCtrl.EnableWindow(false);
+
+	//now = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
+	//localtime(&now);
+	//char str[26];
+	//ctime_s(str, sizeof str, &now);
 
 	// IDM_ABOUTBOX must be in the system command range.
 	ASSERT((IDM_ABOUTBOX & 0xFFF0) == IDM_ABOUTBOX);
@@ -279,7 +289,7 @@ void CPDFSearcherDlg::OnBnClickedBtnSearch()
 	}
 
 	DisableAllBox();
-
+	CalculateProcessBar();
 	thread2 = AfxBeginThread(FindKeywordProcess, this);
 	
 }
@@ -299,7 +309,7 @@ void CPDFSearcherDlg::OnCbnSelchangeType()
 	m_strPathBox.SetWindowTextW(L"");
 }
 
-int CPDFSearcherDlg::FuncForFun(std::string path, std::string keyword)
+int CPDFSearcherDlg::SearchKeywordInPDF(std::string path, std::string keyword)
 {
 	int ret = 0;
 	PDFNet::Initialize(LicenseKey);
@@ -315,8 +325,6 @@ int CPDFSearcherDlg::FuncForFun(std::string path, std::string keyword)
 
 		//call Begin() method to initialize the text search.
 		txt_search.Begin(doc, pattern, mode);
-
-		int step = 0;
 
 		//call Run() method iteratively to find all matching instances.
 		while (true)
@@ -334,7 +342,7 @@ int CPDFSearcherDlg::FuncForFun(std::string path, std::string keyword)
 			}
 		}
 	}
-	catch (Exception& e)
+	catch (Exception& error)
 	{
 		//Error Exception
 		ret = 1;
@@ -368,7 +376,7 @@ void CPDFSearcherDlg::FilterPDFFromList(strFilesName& v)
 			t_InfoEachPDF pdfFile;
 			pdfFile.strFileName = v[i];
 			pdfFile.strFullPathName = strPathAndName;
-			pdfFile.iPageNumb = 0;
+			pdfFile.iPageNumb.push_back(0);
 			pdfFile.bSearchResult = false;
 			vt_PDF.push_back(pdfFile);
 
@@ -487,7 +495,7 @@ void CPDFSearcherDlg::OnLbnSelchangeListbox()
 {
 	// TODO: Show the page of found keyword into m_strPageNumFoundBox
 	int FileNumber = m_ListBoxResult.GetCurSel();
-	int iPage = vt_PDF[FileNumber].iPageNumb;
+	int iPage = vt_PDF[FileNumber].iPageNumb[0];
 	std::string strPage = std::to_string(iPage);
 	CString cstrPage(strPage.c_str());
 	m_strPageNumFoundBox.SetWindowTextW(cstrPage);
@@ -507,8 +515,10 @@ UINT FindKeywordProcess(LPVOID Param)
 {
 	CPDFSearcherDlg* ptr = (CPDFSearcherDlg*)Param;
 
+	for (int i = 0; i < 15; i++)
+	{
 
-
+	}
 
 	ptr->EnableAllBox();
 	return 0;
@@ -534,5 +544,22 @@ void CPDFSearcherDlg::EnableAllBox()
 
 void CPDFSearcherDlg::CalculateProcessBar()
 {
+	m_iEachPercent = 100 / vt_PDF.size();
+	m_iCurrentPercent = 0;
+	m_ProgcessBar.SetPos(0);
+}
 
+int CPDFSearcherDlg::GetCurrentPercentProgcessBar()
+{
+	return m_iCurrentPercent;
+}
+
+int CPDFSearcherDlg::GetPercentForEachPDF()
+{
+	return m_iEachPercent;
+}
+
+void CPDFSearcherDlg::SetProgcessBar(int percent)
+{
+	//m_ProgcessBar.SetPos(percent);
 }

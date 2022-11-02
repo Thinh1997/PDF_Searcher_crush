@@ -28,7 +28,7 @@ struct t_InfoEachPDF
 {
 	std::string strFileName;
 	std::string strFullPathName;
-	int iPageNumb;
+	std::vector<int>iPageNumb;
 	bool bSearchResult;
 };
 
@@ -70,7 +70,7 @@ protected:
 	afx_msg void OnPaint();
 	afx_msg HCURSOR OnQueryDragIcon();
 	DECLARE_MESSAGE_MAP()
-	int FuncForFun(std::string path, std::string keyword);
+	int SearchKeywordInPDF(std::string path, std::string keyword);
 
 private:
 	afx_msg void OnBnClickedPdfFormatCheck();
@@ -92,9 +92,12 @@ private:
 	CButton m_btnSearch;
 	CButton m_btnCancel;
 	CEdit m_strPageNumFoundBox;
+	CButton m_btnDir;
+	CSpinButtonCtrl m_SpinCtrl;
+	CEdit m_strPageOnPageBox;
 
-	float m_fEachPercent;
-	float m_fRunning;
+	int m_iEachPercent;
+	int m_iCurrentPercent;
 	int m_iRBFormat;
 	CEdit m_strSearchBox;
 	CComboBox m_cbTypeDropList;
@@ -106,6 +109,8 @@ private:
 	CWinThread* thread2;
 
 public:
+	time_t now;
+
 	void ClearVtUnFiltName();
 	std::string GetPathString();
 	void GetFilesNameInDir(const std::string& dir, strFilesName& v);
@@ -114,9 +119,8 @@ public:
 	void NumberPDFFound();
 	bool CheckFolderDropList();
 	void GetNameFileFromPath();
-	void SetProgcessBar();
-	void GetProgcessBar();
+	void SetProgcessBar(int percent);
+	int GetCurrentPercentProgcessBar();
+	int GetPercentForEachPDF();
 	void EnableAllBox();
-private:
-	CButton m_btnDir;
 };
