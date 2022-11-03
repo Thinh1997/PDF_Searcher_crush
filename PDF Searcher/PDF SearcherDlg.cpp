@@ -99,7 +99,8 @@ BOOL CPDFSearcherDlg::OnInitDialog()
 	CDialog::OnInitDialog();
 
 	// Add "About..." menu item to system menu.
-	m_iRBFormat = 0;
+	
+	m_iRBFormat = 1;
 
 	///ThinhNP - Set content for combobox 
 	m_cbTypeDropList.InsertString(0, L"Folder");
@@ -333,11 +334,11 @@ int CPDFSearcherDlg::SearchKeywordInPDF(std::string path, std::string keyword)
 
 			if (result.GetMatch() == keyword)
 			{	//Found the keyword!!!
+				int PageFoundNum = result.GetPageNumber();
 
 			}
-			else
+			else if (result.IsDocEnd())
 			{
-				assert(result.IsDocEnd());
 				break;
 			}
 		}
@@ -353,7 +354,7 @@ int CPDFSearcherDlg::SearchKeywordInPDF(std::string path, std::string keyword)
 		ret = 2;
 	}
 
-	PDFNet::Terminate();
+	//PDFNet::Terminate();
 	return ret;
 }
 
@@ -515,11 +516,14 @@ UINT FindKeywordProcess(LPVOID Param)
 {
 	CPDFSearcherDlg* ptr = (CPDFSearcherDlg*)Param;
 
-	for (int i = 0; i < 15; i++)
+	int amountPDF = ptr->GetVtPDFFile()->size();
+
+	for (int i = 0; i < amountPDF; i++)
 	{
-
+		std::string strPathFile = ptr->GetVtPDFFile()[0][i].strFullPathName;
+		std::string Keyword = ptr->GetKeywordSearch();
+		ptr->SearchKeywordInPDF(strPathFile, Keyword);
 	}
-
 	ptr->EnableAllBox();
 	return 0;
 }
@@ -531,6 +535,8 @@ void CPDFSearcherDlg::DisableAllBox()
 	m_strPathBox.EnableWindow(false);
 	m_btnDir.EnableWindow(false);
 	m_btnSearch.EnableWindow(false);
+
+	m_btnCancel.EnableWindow(true);
 }
 
 void CPDFSearcherDlg::EnableAllBox()
@@ -540,6 +546,8 @@ void CPDFSearcherDlg::EnableAllBox()
 	m_strPathBox.EnableWindow(true);
 	m_btnDir.EnableWindow(true);
 	m_btnSearch.EnableWindow(true);
+
+	m_btnCancel.EnableWindow(false);
 }
 
 void CPDFSearcherDlg::CalculateProcessBar()
@@ -562,4 +570,17 @@ int CPDFSearcherDlg::GetPercentForEachPDF()
 void CPDFSearcherDlg::SetProgcessBar(int percent)
 {
 	//m_ProgcessBar.SetPos(percent);
+}
+
+std::vector<t_InfoEachPDF>* CPDFSearcherDlg::GetVtPDFFile()
+{
+	return &vt_PDF;
+}
+
+std::string CPDFSearcherDlg::GetKeywordSearch()
+{
+	CString csKeyword;
+	m_strSearchBox.GetWindowTextW(csKeyword);
+	std::string strKeyword(CW2A(csKeyword.GetString()));
+	return strKeyword;
 }

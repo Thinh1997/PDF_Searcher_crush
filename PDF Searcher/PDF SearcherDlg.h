@@ -70,7 +70,6 @@ protected:
 	afx_msg void OnPaint();
 	afx_msg HCURSOR OnQueryDragIcon();
 	DECLARE_MESSAGE_MAP()
-	int SearchKeywordInPDF(std::string path, std::string keyword);
 
 private:
 	afx_msg void OnBnClickedPdfFormatCheck();
@@ -122,5 +121,9 @@ public:
 	void SetProgcessBar(int percent);
 	int GetCurrentPercentProgcessBar();
 	int GetPercentForEachPDF();
+	std::string GetKeywordSearch();
 	void EnableAllBox();
+
+	std::vector<t_InfoEachPDF>* GetVtPDFFile();
+	int SearchKeywordInPDF(std::string path, std::string keyword);
 };
