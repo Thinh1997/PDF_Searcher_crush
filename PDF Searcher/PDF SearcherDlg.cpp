@@ -313,6 +313,7 @@ void CPDFSearcherDlg::OnCbnSelchangeType()
 int CPDFSearcherDlg::SearchKeywordInPDF(std::string path, std::string keyword)
 {
 	int ret = 0;
+
 	PDFNet::Initialize(LicenseKey);
 
 	try
@@ -332,10 +333,9 @@ int CPDFSearcherDlg::SearchKeywordInPDF(std::string path, std::string keyword)
 		{
 			SearchResult result = txt_search.Run();
 
-			if (result.GetMatch() == keyword)
+			if (result.IsFound())
 			{	//Found the keyword!!!
-				int PageFoundNum = result.GetPageNumber();
-
+				return result.GetPageNumber();
 			}
 			else if (result.IsDocEnd())
 			{
@@ -346,12 +346,12 @@ int CPDFSearcherDlg::SearchKeywordInPDF(std::string path, std::string keyword)
 	catch (Exception& error)
 	{
 		//Error Exception
-		ret = 1;
+		ret = -1;
 	}
 	catch (...)
 	{
 		//"Unknown Exception"
-		ret = 2;
+		ret = -2;
 	}
 
 	//PDFNet::Terminate();
@@ -517,13 +517,37 @@ UINT FindKeywordProcess(LPVOID Param)
 	CPDFSearcherDlg* ptr = (CPDFSearcherDlg*)Param;
 
 	int amountPDF = ptr->GetVtPDFFile()->size();
-
 	for (int i = 0; i < amountPDF; i++)
 	{
 		std::string strPathFile = ptr->GetVtPDFFile()[0][i].strFullPathName;
 		std::string Keyword = ptr->GetKeywordSearch();
-		ptr->SearchKeywordInPDF(strPathFile, Keyword);
+		int PageFound = ptr->SearchKeywordInPDF(strPathFile, Keyword);
+		//If keyword found!
+		if (PageFound > 0)
+		{
+			ptr->GetVtPDFFile()[0][i].iPageNumb[0] = PageFound;
+			ptr->GetVtPDFFile()[0][i].bSearchResult = true;
+		}
+
+		if (i != amountPDF - 1)
+		{
+			ptr->SetProgcessBar(ptr->GetCurrentPercentProgcessBar() + ptr->GetPercentForEachPDF());
+		}
+		else
+		{
+			ptr->SetProgcessBar(ptr->GetCurrentPercentProgcessBar() + ptr->GetPercentForEachPDF() + (100 % amountPDF));
+		}
 	}
+
+	//Filter the PDF vector and just keep only found keyword
+	for (int i = 0; i < ptr->GetVtPDFFile()[0].size(); i++)
+	{
+		if (!ptr->GetVtPDFFile()[0][i].bSearchResult)
+		{
+			ptr->GetVtPDFFile()[0].erase(ptr->GetVtPDFFile()[0].begin() + i);
+		}
+	}
+	ptr->ShowPDFIntoListBox();
 	ptr->EnableAllBox();
 	return 0;
 }
@@ -535,6 +559,7 @@ void CPDFSearcherDlg::DisableAllBox()
 	m_strPathBox.EnableWindow(false);
 	m_btnDir.EnableWindow(false);
 	m_btnSearch.EnableWindow(false);
+	m_ListBoxResult.EnableWindow(false);
 
 	m_btnCancel.EnableWindow(true);
 }
@@ -546,6 +571,7 @@ void CPDFSearcherDlg::EnableAllBox()
 	m_strPathBox.EnableWindow(true);
 	m_btnDir.EnableWindow(true);
 	m_btnSearch.EnableWindow(true);
+	m_ListBoxResult.EnableWindow(true);
 
 	m_btnCancel.EnableWindow(false);
 }
@@ -559,7 +585,7 @@ void CPDFSearcherDlg::CalculateProcessBar()
 
 int CPDFSearcherDlg::GetCurrentPercentProgcessBar()
 {
-	return m_iCurrentPercent;
+	return m_ProgcessBar.GetPos();
 }
 
 int CPDFSearcherDlg::GetPercentForEachPDF()
@@ -569,7 +595,7 @@ int CPDFSearcherDlg::GetPercentForEachPDF()
 
 void CPDFSearcherDlg::SetProgcessBar(int percent)
 {
-	//m_ProgcessBar.SetPos(percent);
+	m_ProgcessBar.SetPos(percent);
 }
 
 std::vector<t_InfoEachPDF>* CPDFSearcherDlg::GetVtPDFFile()
@@ -583,4 +609,15 @@ std::string CPDFSearcherDlg::GetKeywordSearch()
 	m_strSearchBox.GetWindowTextW(csKeyword);
 	std::string strKeyword(CW2A(csKeyword.GetString()));
 	return strKeyword;
+}
+
+void CPDFSearcherDlg::ShowPDFIntoListBox()
+{
+	m_ListBoxResult.ResetContent();
+	for (int i = 0; i < vt_PDF.size(); i++)
+	{
+		std::string tempString = std::to_string(i + 1) + ") " + vt_PDF[i].strFileName;
+		CString csNameFile(tempString.c_str());
+		m_ListBoxResult.AddString(csNameFile);
+	}
 }

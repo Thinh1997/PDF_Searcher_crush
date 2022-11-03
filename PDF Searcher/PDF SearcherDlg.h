@@ -84,6 +84,8 @@ private:
 	void DisableAllBox();
 	void CalculateProcessBar();
 
+	bool isRemove(bool bSearch);
+
 	CEdit m_strPathBox;
 	CEdit m_strFoundBox;
 	CProgressCtrl m_ProgcessBar;
@@ -126,4 +128,5 @@ public:
 
 	std::vector<t_InfoEachPDF>* GetVtPDFFile();
 	int SearchKeywordInPDF(std::string path, std::string keyword);
+	void ShowPDFIntoListBox();
 };
