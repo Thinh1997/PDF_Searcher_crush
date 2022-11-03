@@ -80,6 +80,7 @@ private:
 	afx_msg void OnCbnSelchangeType();
 	afx_msg void OnLbnSelchangeListbox();
 	afx_msg void OnLbnDblclkListbox();
+	afx_msg void OnBnClickedBtnStopProcess();
 
 	void DisableAllBox();
 	void CalculateProcessBar();
@@ -111,6 +112,7 @@ private:
 
 public:
 	time_t now;
+	bool bStopScanThread;
 
 	void ClearVtUnFiltName();
 	std::string GetPathString();
@@ -129,4 +131,6 @@ public:
 	std::vector<t_InfoEachPDF>* GetVtPDFFile();
 	int SearchKeywordInPDF(std::string path, std::string keyword);
 	void ShowPDFIntoListBox();
+	void ShowMessageAndTimeOnFoundBox();
+	void FilterPDFNotFoundKeyword();
 };

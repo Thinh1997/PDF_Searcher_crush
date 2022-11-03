@@ -89,6 +89,7 @@ BEGIN_MESSAGE_MAP(CPDFSearcherDlg, CDialog)
 ON_CBN_SELCHANGE(ID_TYPE, &CPDFSearcherDlg::OnCbnSelchangeType)
 ON_LBN_SELCHANGE(ID_LISTBOXRESULT, &CPDFSearcherDlg::OnLbnSelchangeListbox)
 ON_LBN_DBLCLK(ID_LISTBOXRESULT, &CPDFSearcherDlg::OnLbnDblclkListbox)
+ON_BN_CLICKED(ID_BTNCLOSEPROGRAM, &CPDFSearcherDlg::OnBnClickedBtnStopProcess)
 END_MESSAGE_MAP()
 
 
@@ -101,6 +102,7 @@ BOOL CPDFSearcherDlg::OnInitDialog()
 	// Add "About..." menu item to system menu.
 	
 	m_iRBFormat = 1;
+	bStopScanThread = false;
 
 	///ThinhNP - Set content for combobox 
 	m_cbTypeDropList.InsertString(0, L"Folder");
@@ -247,6 +249,8 @@ void CPDFSearcherDlg::OnBnClickedBtnDir()
 		m_strPathBox.SetWindowTextW(strFolderName);
 	}
 
+	//Set progcess bar thanh 0
+	m_ProgcessBar.SetPos(0);
 	//Goi thread ra de xu ly tren ten file
 	thread = AfxBeginThread(GetPDFAndShown, this);
 }
@@ -291,6 +295,8 @@ void CPDFSearcherDlg::OnBnClickedBtnSearch()
 
 	DisableAllBox();
 	CalculateProcessBar();
+	bStopScanThread = false;
+	m_strFoundBox.SetWindowTextW(L"Scanning...");
 	thread2 = AfxBeginThread(FindKeywordProcess, this);
 	
 }
@@ -340,6 +346,12 @@ int CPDFSearcherDlg::SearchKeywordInPDF(std::string path, std::string keyword)
 			else if (result.IsDocEnd())
 			{
 				break;
+			}
+
+			if (bStopScanThread)
+			{
+				EnableAllBox();
+				return 0;
 			}
 		}
 	}
@@ -402,7 +414,6 @@ UINT GetPDFAndShown(LPVOID Param)
 	}
 	ptr->FilterPDFFromList(*strRawFileName);
 	ptr->NumberPDFFound();
-
 	return 0;
 }
 
@@ -496,6 +507,10 @@ void CPDFSearcherDlg::OnLbnSelchangeListbox()
 {
 	// TODO: Show the page of found keyword into m_strPageNumFoundBox
 	int FileNumber = m_ListBoxResult.GetCurSel();
+	if (FileNumber < 0)
+	{
+		return;
+	}
 	int iPage = vt_PDF[FileNumber].iPageNumb[0];
 	std::string strPage = std::to_string(iPage);
 	CString cstrPage(strPage.c_str());
@@ -537,18 +552,20 @@ UINT FindKeywordProcess(LPVOID Param)
 		{
 			ptr->SetProgcessBar(ptr->GetCurrentPercentProgcessBar() + ptr->GetPercentForEachPDF() + (100 % amountPDF));
 		}
+
+		//Check if Button Cancel Process press
+		if (ptr->bStopScanThread)
+		{
+			ptr->EnableAllBox();
+			return 0;
+		}
 	}
 
 	//Filter the PDF vector and just keep only found keyword
-	for (int i = 0; i < ptr->GetVtPDFFile()[0].size(); i++)
-	{
-		if (!ptr->GetVtPDFFile()[0][i].bSearchResult)
-		{
-			ptr->GetVtPDFFile()[0].erase(ptr->GetVtPDFFile()[0].begin() + i);
-		}
-	}
+	ptr->FilterPDFNotFoundKeyword();
 	ptr->ShowPDFIntoListBox();
 	ptr->EnableAllBox();
+	ptr->ShowMessageAndTimeOnFoundBox();
 	return 0;
 }
 
@@ -619,5 +636,50 @@ void CPDFSearcherDlg::ShowPDFIntoListBox()
 		std::string tempString = std::to_string(i + 1) + ") " + vt_PDF[i].strFileName;
 		CString csNameFile(tempString.c_str());
 		m_ListBoxResult.AddString(csNameFile);
+	}
+}
+
+void CPDFSearcherDlg::OnBnClickedBtnStopProcess()
+{
+	m_strFoundBox.SetWindowTextW(L"");
+	bStopScanThread = true;
+}
+
+void CPDFSearcherDlg::ShowMessageAndTimeOnFoundBox()
+{
+	now = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
+	localtime(&now);
+	char str[26];
+	ctime_s(str, sizeof str, &now);
+
+	CString msg = CString(str);
+	if (m_cbTypeDropList.GetCurSel() == 0)
+	{
+		std::string stdMsg = " Finish scan in folder";
+		msg += stdMsg.c_str();
+	}
+	else
+	{
+		std::string stdMsg = " Finish scan in file";
+		msg += stdMsg.c_str();
+	}
+	m_strFoundBox.SetWindowTextW(msg);
+}
+
+void CPDFSearcherDlg::FilterPDFNotFoundKeyword()
+{
+	std::vector<t_InfoEachPDF> vt_tempPDF;
+	for (int i = 0; i < vt_PDF.size(); i++)
+	{
+		if (vt_PDF[i].bSearchResult)
+		{
+			vt_tempPDF.push_back(vt_PDF[i]);
+		}
+	}
+	vt_PDF.clear();
+
+	for (int i = 0; i < vt_tempPDF.size(); i++)
+	{
+		vt_PDF.push_back(vt_tempPDF[i]);
 	}
 }
